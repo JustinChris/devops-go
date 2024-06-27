@@ -1,0 +1,25 @@
+web:
+    auth_service_url: https://auth.example.com
+    host: www.example.com
+    logging:
+        file:
+            backup_count: 5
+            filename: /var/log/web.log
+            max_bytes: 10485760
+        format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        handlers:
+            - console
+            - file
+        level: INFO
+    monitoring:
+        enabled: true
+        endpoint: http://monitoring.example.com
+        scrape_interval: 15s
+    payment_service_url: https://payment.example.com
+    port: 80
+    session_timeout: 30
+    ssl_certificate: /path/to/certificate.crt
+    ssl_enabled: true
+    ssl_key: /path/to/key.key
+    static_dir: /var/www/static
+    upload_dir: /var/www/uploads

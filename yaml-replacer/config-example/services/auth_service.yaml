@@ -1,0 +1,31 @@
+auth_service:
+    api_key: abcdef123456
+    database:
+        host: db.auth.example.com
+        name: auth_db
+        password: auth_password
+        port: 5432
+        user: auth_user
+    lockout_duration: 300
+    logging:
+        file:
+            backup_count: 5
+            filename: /var/log/auth_service.log
+            max_bytes: 10485760
+        format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        handlers:
+            - console
+            - file
+        level: DEBUG
+    max_login_attempts: 5
+    monitoring:
+        enabled: true
+        endpoint: http://monitoring.example.com
+        scrape_interval: 15s
+    password_policy:
+        min_length: 8
+        require_digit: true
+        require_lowercase: true
+        require_uppercase: true
+    token_expiration: 3600
+    url: https://auth.example.com

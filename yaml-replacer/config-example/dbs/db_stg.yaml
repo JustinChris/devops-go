@@ -1,0 +1,26 @@
+database:
+    backup:
+        retention_days: 7
+        schedule: 0 1 * * *
+    host: db.staging.example.com
+    logging:
+        file:
+            backup_count: 5
+            filename: /var/log/db_stg.log
+            max_bytes: 10485760
+        format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        handlers:
+            - console
+            - file
+        level: WARNING
+    max_connections: 50
+    monitoring:
+        enabled: true
+        endpoint: http://monitoring.example.com
+        scrape_interval: 15s
+    name: staging_db
+    password: staging_password
+    pool_size: 10
+    port: 5432
+    ssl_mode: prefer
+    user: staging_user
