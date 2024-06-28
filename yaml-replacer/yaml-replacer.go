@@ -45,7 +45,7 @@ func getAllFileInParentDirectory(dirPath string) ([]string, error) {
 
 func updateYamlData(data *interface{}, key string, value interface{}) {
 	switch d := (*data).(type) {
-	case map[interface{}]interface{}:
+	case map[string]interface{}:
 		for k, v := range d {
 			if k == key {
 				d[k] = value
@@ -79,7 +79,7 @@ func updateYamlFile(yamlFile string, key string, value string) error {
 		return err
 	}
 
-	err = os.WriteFile(yamlFile, yamlBytes, 0644)
+	err = os.WriteFile(yamlFile, yamlBytes, 0666)
 	if err != nil {
 		return err
 	}
@@ -129,13 +129,10 @@ func updateYamlFileWithPath(filepath string, keys []string, value interface{}) e
 
 	current := yamlData
 	for _, key := range keys[:len(keys)-1] {
-		if m, ok := current.(map[interface{}]interface{}); ok {
+
+		if m, ok := current.(map[string]interface{}); ok {
 			if next, exists := m[key]; exists {
 				current = next
-			} else {
-				newMap := make(map[interface{}]interface{})
-				m[key] = newMap
-				current = newMap
 			}
 		} else {
 			return fmt.Errorf("invalid path in YAML structure")
@@ -143,8 +140,10 @@ func updateYamlFileWithPath(filepath string, keys []string, value interface{}) e
 	}
 
 	lastKey := keys[len(keys)-1]
-	if m, ok := current.(map[interface{}]interface{}); ok {
-		m[lastKey] = value
+	if m, ok := current.(map[string]interface{}); ok {
+		if _, exists := m[lastKey]; exists {
+			m[lastKey] = value
+		}
 	} else {
 		return fmt.Errorf("invalid path in YAML structure")
 	}
