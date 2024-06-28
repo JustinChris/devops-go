@@ -1,0 +1,26 @@
+database:
+    backup:
+        retention_days: 30
+        schedule: 0 2 * * *
+    host: db.prod.example.com
+    logging:
+        file:
+            backup_count: 5
+            filename: /var/log/db_prod.log
+            max_bytes: 10485760
+        format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        handlers:
+            - console
+            - file
+        level: WARNING
+    max_connections: 100
+    monitoring:
+        enabled: true
+        endpoint: http://monitoring.example.com
+        scrape_interval: 15s
+    name: prod_db
+    password: prod_password
+    pool_size: 20
+    port: 5432
+    ssl_mode: require
+    user: prod_user
