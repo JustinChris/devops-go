@@ -1,0 +1,52 @@
+name: deploy workflow
+
+on:
+  push: 
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to which environment (staging or production)'
+        required: true
+        default: 'staging'
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy-sequence:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: checkout@v4
+        uses: actions/checkout@v4
+      
+      - name: set database configuration
+        run: |
+        if [[ ${{ github.event_name }} == 'push' || ${{ github.event_name }} == 'workflow_dispatch' && ${{ github.event.inputs.environment }} == 'staging']]; then
+          DATABASE_HOST=$(awk '/^hosts:/{print $2}' config-example/dbs/db_stg.yaml)
+        elif [[ ${{ github.event_name }} == 'workflow_dispatch' && ${{ github.event.inputs.environment }} == 'production' ]]; then
+          DATABASE_HOSTS=$(awk '/^hosts:/{print $2}' config-example/dbs/db_prod.yaml)
+        else
+          echo "Unsupported event or environment"
+          exit 1
+        fi
+        sed -i "s/^database:.*/database: $DATABASE_HOSTS/g" config-example/apps/web.yaml
+      
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          sudo apt-get install zip -y
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      - name: Configure AWS credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_SECRET_REGION }}
+
+      - name: deploy configuration
+        run: scp -r config-example ubuntu@ip-172-31-24-232:/
+      
