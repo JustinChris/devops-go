@@ -1,0 +1,55 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'config-example/**'
+      - '.github/workflows/deploy-workflow.yaml'
+  workflow_dispatch:
+    input:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: 'staging'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22
+
+      - name: Run replacer
+        working-directory: yaml-replacer
+        run: | 
+          if [[ '${{ github.event_name }}' == 'push' || '${{ github.event_name }}' == 'pull_request' || '${{ github.event_name }}' == 'workflow_dispatch' && '${{ github.event.inputs.environment }}' == 'staging' ]]; then
+            go run yaml-replacer.go -key database -dir 'config-example/apps' -value '$(awk '/^hosts:/{print $2}' config-example/dbs/db_stg.yaml)'
+          elif [[ '${{ github.event_name }}' == 'workflow_dispatch' && '${{ github.event.inputs.environment }}' == 'production' ]]; then
+            go run yaml-replacer.go -key database -dir 'config-example/apps' -value '$(awk '/^hosts:/{print $2}' config-example/dbs/db_prod.yaml)'
+          else
+            echo "Unsupported event or environment"
+            exit 1
+          fi
+
+      - name: Copy files to EC2 instance
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.INSTANCE_KEY }}
+          source: config-example/*
+          target: /home/ubuntu/config-example
+          overwrite: true
