@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - 'config-example/**'
-      - '.github/workflows/deploy'
+      - '.github/workflows/deploy-workflow.yaml'
   workflow_dispatch:
     input:
       environment:
