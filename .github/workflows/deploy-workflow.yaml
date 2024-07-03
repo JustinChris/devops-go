@@ -36,9 +36,9 @@ jobs:
         working-directory: yaml-replacer
         run: | 
           if [[ '${{ github.event_name }}' == 'push' || '${{ github.event_name }}' == 'pull_request' || '${{ github.event_name }}' == 'workflow_dispatch' && '${{ github.event.inputs.environment }}' == 'staging' ]]; then
-            go run yaml-replacer.go -key database -dir config-example/apps -value $(awk '/^hosts:/{print $2}' config-example/dbs/db_stg.yaml)
+            go run yaml-replacer.go -key database -dir 'config-example/apps' -value '$(awk '/^hosts:/{print $2}' config-example/dbs/db_stg.yaml)'
           elif [[ '${{ github.event_name }}' == 'workflow_dispatch' && '${{ github.event.inputs.environment }}' == 'production' ]]; then
-            go run yaml-replacer.go -key database -dir config-example/apps -value $(awk '/^hosts:/{print $2}' config-example/dbs/db_prod.yaml)
+            go run yaml-replacer.go -key database -dir 'config-example/apps' -value '$(awk '/^hosts:/{print $2}' config-example/dbs/db_prod.yaml)'
           else
             echo "Unsupported event or environment"
             exit 1
